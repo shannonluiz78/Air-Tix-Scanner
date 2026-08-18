@@ -233,9 +233,13 @@
     const resultsPanel = $("#results-panel");
     const timingPanel = $("#timing-panel");
 
+    const snapshotPanel = $("#snapshot-panel");
+
     if (!origin || origin.length !== 3 || !destination || destination.length !== 3 || !depart) {
       resultsPanel.classList.add("hidden");
       timingPanel.classList.add("hidden");
+      snapshotPanel.classList.add("hidden");
+      currentSearch = null;
       return;
     }
 
@@ -245,6 +249,10 @@
     $("#link-kayak").href = links.kayak;
     $("#link-momondo").href = links.momondo;
     resultsPanel.classList.remove("hidden");
+
+    currentSearch = { origin, destination, depart, ret, currency: FAREBOARD_CONFIG.DEFAULT_CURRENCY || "SGD" };
+    snapshotPanel.classList.remove("hidden");
+    renderSnapshotIdle();
 
     const haul = haulSelect === "auto" ? guessHaul(destination) : haulSelect;
     const rec = timingRecommendation({ destination, depart, haul });
@@ -284,6 +292,91 @@
     const pct = Math.max(0, Math.min(100, 100 - ((rec.daysOut || 0) / span) * 100));
     gaugeEl.style.setProperty("--marker", pct + "%");
     gaugeEl.dataset.zone = rec.zone || "unset";
+  }
+
+  /* ---------------------------------------------------------------
+     5b. Live cached-price snapshot (via the optional Vercel API)
+  --------------------------------------------------------------- */
+  let currentSearch = null;
+
+  function renderSnapshotIdle() {
+    const body = $("#snapshot-body");
+    if (!FAREBOARD_CONFIG.SNAPSHOT_API_BASE) {
+      body.innerHTML = `<p class="research-note" style="margin-top:14px;">Snapshot API isn't set up yet — deploy <code>/api</code> to Vercel and set <code>SNAPSHOT_API_BASE</code> in assets/config.js (see README). Until then, use the compare links above.</p>`;
+    } else {
+      body.innerHTML = "";
+    }
+  }
+
+  function svgTrend(byDate) {
+    if (!byDate || byDate.length < 2) return "";
+    const w = 600, h = 130, pad = 24;
+    const prices = byDate.map((d) => d.price);
+    const min = Math.min(...prices), max = Math.max(...prices);
+    const range = max - min || 1;
+    const stepX = (w - pad * 2) / (byDate.length - 1);
+    const points = byDate.map((d, i) => {
+      const x = pad + i * stepX;
+      const y = h - pad - ((d.price - min) / range) * (h - pad * 2);
+      return [x, y];
+    });
+    const path = points.map((p, i) => (i === 0 ? "M" : "L") + p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
+    const dots = points
+      .map((p, i) => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" class="trend-dot"><title>${byDate[i].date}: ${byDate[i].price}</title></circle>`)
+      .join("");
+    return `<svg viewBox="0 0 ${w} ${h}" class="trend-svg" role="img" aria-label="Price trend across the month">
+      <path d="${path}" class="trend-line" fill="none"/>
+      ${dots}
+    </svg>
+    <div class="trend-range"><span>${byDate[0].date} · lowest ${min}</span><span>${byDate[byDate.length - 1].date} · highest ${max}</span></div>`;
+  }
+
+  async function checkSnapshot() {
+    const body = $("#snapshot-body");
+    const base = FAREBOARD_CONFIG.SNAPSHOT_API_BASE;
+    if (!base) {
+      renderSnapshotIdle();
+      return;
+    }
+    if (!currentSearch) return;
+
+    body.innerHTML = `<p class="research-note" style="margin-top:14px;">Checking cached fares\u2026</p>`;
+
+    const params = new URLSearchParams({
+      origin: currentSearch.origin,
+      destination: currentSearch.destination,
+      month: currentSearch.depart.slice(0, 7),
+      currency: currentSearch.currency || "SGD",
+    });
+    if (currentSearch.ret) params.set("return_month", currentSearch.ret.slice(0, 7));
+
+    try {
+      const res = await fetch(`${base.replace(/\/$/, "")}/api/prices?${params.toString()}`);
+      const data = await res.json();
+      if (!data.success) {
+        body.innerHTML = `<p class="research-note" style="margin-top:14px;">${escapeHtml(data.error || "Snapshot unavailable right now.")}</p>`;
+        return;
+      }
+      if (!data.byAirline || data.byAirline.length === 0) {
+        body.innerHTML = `<p class="research-note" style="margin-top:14px;">${escapeHtml(data.note || "No cached fares found for this route yet.")}</p>`;
+        return;
+      }
+      const cards = data.byAirline
+        .map(
+          (a) => `<div class="compare-card">
+            <span class="site">${escapeHtml(a.airlineName)}</span>
+            <span class="hint">${a.price} ${escapeHtml(currentSearch.currency || "SGD")}${a.transfers === 0 ? " · direct" : ""}</span>
+          </div>`
+        )
+        .join("");
+      body.innerHTML = `
+        <div class="compare-grid" style="margin-top:14px;">${cards}</div>
+        ${svgTrend(data.byDate)}
+        <p class="research-note">${escapeHtml(data.note || "")}</p>
+      `;
+    } catch (err) {
+      body.innerHTML = `<p class="research-note" style="margin-top:14px;">Couldn't reach the snapshot API (${escapeHtml(err.message)}). Check SNAPSHOT_API_BASE in config.js and that the Vercel deploy is live.</p>`;
+    }
   }
 
   /* ---------------------------------------------------------------
@@ -396,6 +489,7 @@
     });
 
     $("#alert-form").addEventListener("submit", handleCreateAlert);
+    $("#snapshot-btn").addEventListener("click", checkSnapshot);
 
     loadWatches();
   });
