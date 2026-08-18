@@ -13,5 +13,5 @@ const FAREBOARD_CONFIG = {
   // After deploying the /api folder to Vercel (see README), paste your
   // project's URL here, e.g. "https://fareboard-yourname.vercel.app"
   // Leave blank to skip the live snapshot panel.
-  SNAPSHOT_API_BASE: "https://vercel.com/antarus/air-tix-scanner",
+  SNAPSHOT_API_BASE: "https://air-tix-scanner.vercel.app/",
 };
