@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Open FareBoard
+    url: https://YOUR_GITHUB_USERNAME.github.io/YOUR_REPO_NAME/
+    about: Build your search and create alerts from the app instead of a blank issue.
