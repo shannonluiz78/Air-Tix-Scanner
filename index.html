@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FareBoard — flight deal radar</title>
+<meta name="description" content="Search cheap flights across four engines at once, know when to buy, and get alerted when your price hits." />
+<link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a href="#top" class="brand">FAREBOARD<small>personal flight-deal radar</small></a>
+    <a href="#alerts" class="btn secondary" style="margin:0;padding:8px 14px;font-size:0.8rem;">My watches ↓</a>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+
+  <h1 class="board-title" data-flap>SEARCH SMARTER</h1>
+  <p class="tagline">One search compares four real engines at once. A timing gauge tells you if now's a good time to buy. An alert taps you on the shoulder when your price hits — so you can go book before it's gone.</p>
+
+  <!-- ================= SEARCH ================= -->
+  <section class="panel" aria-label="Flight search">
+    <p class="eyebrow">Step 1</p>
+    <h2>Where and when</h2>
+    <p class="lede">Fill this in once — it feeds the comparison links, the timing advice, and the alert form below.</p>
+
+    <datalist id="airport-list"></datalist>
+
+    <div class="field-grid">
+      <div class="field">
+        <label for="f-origin">From (IATA code)</label>
+        <input id="f-origin" type="text" maxlength="3" placeholder="SIN" list="airport-list" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="f-destination">To (IATA code)</label>
+        <input id="f-destination" type="text" maxlength="3" placeholder="NRT" list="airport-list" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="f-depart">Depart date</label>
+        <input id="f-depart" type="date" />
+      </div>
+      <div class="field">
+        <label for="f-return">Return date (leave blank for one-way)</label>
+        <input id="f-return" type="date" />
+      </div>
+      <div class="field">
+        <label for="f-cabin">Cabin</label>
+        <select id="f-cabin">
+          <option value="economy">Economy</option>
+          <option value="premium">Premium economy</option>
+          <option value="business">Business</option>
+          <option value="first">First</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-adults">Travellers</label>
+        <input id="f-adults" type="number" min="1" max="9" value="1" />
+      </div>
+      <div class="field" style="grid-column: 1 / -1;">
+        <label for="f-haul">Trip type (for timing advice)</label>
+        <select id="f-haul">
+          <option value="auto">Auto-detect from destination</option>
+          <option value="regional">Regional — under ~5hr (ASEAN)</option>
+          <option value="medium">Medium-haul — ~5–8hr (NE Asia, India, Middle East)</option>
+          <option value="long">Long-haul — 8hr+ (Europe, US, Australia/NZ)</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RESULTS / COMPARE ================= -->
+  <section class="panel hidden" id="results-panel" aria-label="Compare search engines">
+    <p class="eyebrow">Step 2</p>
+    <h2>Compare live prices</h2>
+    <p class="lede">These open the real search engines with your trip pre-filled. FareBoard never invents its own prices — it routes you to the source so you always see what you'd actually pay.</p>
+    <div class="compare-grid">
+      <a id="link-google" class="compare-card" target="_blank" rel="noopener">
+        <span class="site">Google Flights</span>
+        <span class="hint">Best overview + price graph</span>
+      </a>
+      <a id="link-skyscanner" class="compare-card" target="_blank" rel="noopener">
+        <span class="site">Skyscanner</span>
+        <span class="hint">Strong on budget carriers</span>
+      </a>
+      <a id="link-kayak" class="compare-card" target="_blank" rel="noopener">
+        <span class="site">Kayak</span>
+        <span class="hint">Good fare-trend hints</span>
+      </a>
+      <a id="link-momondo" class="compare-card" target="_blank" rel="noopener">
+        <span class="site">Momondo</span>
+        <span class="hint">Often surfaces different OTAs</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ================= TIMING ================= -->
+  <section class="panel hidden" id="timing-panel" aria-label="Timing advice">
+    <p class="eyebrow">Step 3</p>
+    <h2>Should you buy now?</h2>
+    <p id="timing-haul-label"></p>
+    <p class="timing-headline" id="timing-zone">—</p>
+    <p id="timing-detail"></p>
+
+    <div class="gauge" id="timing-gauge"></div>
+    <div class="gauge-labels"><span>Book now</span><span>Sweet spot</span><span>Too early</span></div>
+
+    <ul class="timing-notes" id="timing-notes"></ul>
+
+    <p class="research-note">Based on published 2026 aggregate fare-pattern research (Going.com's booking-window analysis, Google Flights' historical fare data, Expedia's Air Hacks report, Kayak's booking data). These are averages across many routes — not a live prediction for your specific flight. Treat it as a nudge, not gospel.</p>
+  </section>
+
+  <!-- ================= ALWAYS-ON FACTS ================= -->
+  <section class="panel" aria-label="General timing facts">
+    <p class="eyebrow">Good to know, any time</p>
+    <h2>Booking rules of thumb</h2>
+    <div class="facts-grid">
+      <div class="fact"><span class="n">Tue · Wed · Sat</span><span class="d">cheapest days to fly — often 10–15% below weekend fares</span></div>
+      <div class="fact"><span class="n">~2–3%</span><span class="d">difference by which day you click "buy" — the old "book on Tuesday" rule barely matters anymore</span></div>
+      <div class="fact"><span class="n">Jan · Feb</span><span class="d">cheapest months to fly · Sep–Oct close behind · Jul & Dec run priciest</span></div>
+      <div class="fact"><span class="n">&lt; 3 weeks out</span><span class="d">fares typically rise, not fall — don't bank on a last-minute deal</span></div>
+      <div class="fact"><span class="n">Flying on points?</span><span class="d">book award seats the moment they open — inventory disappears long before cash prices drop</span></div>
+    </div>
+  </section>
+
+  <!-- ================= ALERTS ================= -->
+  <section class="panel" id="alerts" aria-label="Price alerts">
+    <p class="eyebrow">Step 4 — optional</p>
+    <h2>Set a price alert</h2>
+    <p class="lede">This creates a GitHub Issue in your own repo as a "watch." A scheduled GitHub Action checks cached fare data every few hours and comments on the issue the moment your price shows up — you'll get a GitHub notification, same as any other issue activity.</p>
+
+    <form id="alert-form">
+      <div class="field-grid">
+        <div class="field">
+          <label for="a-origin">From</label>
+          <input id="a-origin" type="text" maxlength="3" readonly />
+        </div>
+        <div class="field">
+          <label for="a-destination">To</label>
+          <input id="a-destination" type="text" maxlength="3" readonly />
+        </div>
+        <div class="field">
+          <label for="a-depart">Depart</label>
+          <input id="a-depart" type="text" readonly />
+        </div>
+        <div class="field">
+          <label for="a-return">Return</label>
+          <input id="a-return" type="text" readonly />
+        </div>
+        <input type="hidden" id="a-cabin" />
+        <div class="field">
+          <label for="a-price">Alert me under</label>
+          <input id="a-price" type="number" min="1" placeholder="600" />
+        </div>
+        <div class="field">
+          <label for="a-currency">Currency</label>
+          <select id="a-currency">
+            <option>SGD</option><option>USD</option><option>EUR</option>
+            <option>GBP</option><option>AUD</option><option>JPY</option>
+            <option>MYR</option><option>THB</option><option>INR</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn" type="submit">Create alert on GitHub →</button>
+    </form>
+
+    <h2 style="margin-top:28px;">Your active watches</h2>
+    <ul id="watch-list"></ul>
+  </section>
+
+</main>
+
+<footer class="foot">
+  FareBoard is a static site you host yourself — no server, no tracking, your data lives in your own GitHub repo.
+  <br />See the README in the repo for setup and how the alert Action works.
+</footer>
+
+<script src="assets/config.js"></script>
+<script src="assets/airports.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
