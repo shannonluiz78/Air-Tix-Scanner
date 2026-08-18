@@ -1,0 +1,75 @@
+name: Price watch
+description: Track a flight route and get notified when the price drops to your target.
+title: "[watch] "
+labels: ["price-watch"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue is your "watch." Leave it open and a scheduled GitHub Action will
+        check cached fare data every few hours and comment here when your target is hit.
+        Close the issue once you've booked (or no longer care about this route).
+  - type: input
+    id: origin
+    attributes:
+      label: Origin airport (IATA code)
+      placeholder: SIN
+    validations:
+      required: true
+  - type: input
+    id: destination
+    attributes:
+      label: Destination airport (IATA code)
+      placeholder: NRT
+    validations:
+      required: true
+  - type: input
+    id: depart_date
+    attributes:
+      label: Depart date (YYYY-MM-DD)
+      placeholder: "2026-12-10"
+    validations:
+      required: true
+  - type: input
+    id: return_date
+    attributes:
+      label: Return date (YYYY-MM-DD) — leave blank for one-way
+      placeholder: "2026-12-20"
+    validations:
+      required: false
+  - type: input
+    id: target_price
+    attributes:
+      label: Target price (numbers only)
+      placeholder: "600"
+    validations:
+      required: true
+  - type: dropdown
+    id: currency
+    attributes:
+      label: Currency
+      options:
+        - SGD
+        - USD
+        - EUR
+        - GBP
+        - AUD
+        - JPY
+        - MYR
+        - THB
+        - INR
+      default: 0
+    validations:
+      required: true
+  - type: dropdown
+    id: cabin
+    attributes:
+      label: Cabin
+      options:
+        - economy
+        - premium
+        - business
+        - first
+      default: 0
+    validations:
+      required: true
