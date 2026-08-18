@@ -6,8 +6,8 @@
 //   GITHUB_REPO  = "fareboard"
 // ---------------------------------------------------------------
 const FAREBOARD_CONFIG = {
-  GITHUB_OWNER: "YOUR_GITHUB_USERNAME",
-  GITHUB_REPO: "YOUR_REPO_NAME",
+  GITHUB_OWNER: "shannonluiz78",
+  GITHUB_REPO: "Air-Tix_Scanner",
   DEFAULT_CURRENCY: "SGD",
   DEFAULT_ORIGIN: "SIN",
   // After deploying the /api folder to Vercel (see README), paste your
