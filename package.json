@@ -2,5 +2,6 @@
   "name": "fareboard-api",
   "version": "1.0.0",
   "private": true,
+  "type": "module", 
   "description": "Serverless API for FareBoard — cached flight price snapshot proxy in front of Travelpayouts."
 }
